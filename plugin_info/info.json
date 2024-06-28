@@ -1,0 +1,22 @@
+{
+	"id": "MilesightEinkDIsplay",
+	"name": "Milessight Eink Display",
+	"pluginVersion": "0.1",
+	"description": {
+		"fr_FR": "Plugin pour intéragir avec les écrans Milesight Eink"
+	},
+	"licence": "AGPL",
+	"author": "Codemate SARL",
+	"require": "4.3",
+	"category": "automation protocol",
+	"hasDependency": true,
+	"hasOwnDeamon": false,
+	"maxDependancyInstallTime": 0,
+	"changelog_beta": "",
+	"changelog": "https://github.com/nicolas-codemate/jeedom-MilesightEinkDisplay/blob/main/docs/fr_FR/changelog.md",
+	"documentation": "https://github.com/nicolas-codemate/jeedom-MilesightEinkDisplay/blob/main/README.md",
+	"language": [
+		"fr_FR"
+	],
+	"compatibility": ""
+}
