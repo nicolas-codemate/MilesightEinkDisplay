@@ -102,7 +102,7 @@ $jMQTTEqpts = eqLogic::byType('jMQTT');
                 <?php
                 for ($i = 1; $i <= 5; $i++) {
                     echo "<label for=\"text_$i\" class=\"control-label\">{{Text $i}}</label>";
-                    echo "<input type=\"text\" class=\"form-control\" id=\"text_1\" name=\"text_1\">";
+                    echo "<input type=\"text\" class=\"form-control\" id=\"text_$i\" name=\"text_$i\">";
                 }
                 ?>
                 <label class="control-label" for="qrcode">{{QR Code}}</label>

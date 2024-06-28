@@ -32,11 +32,11 @@ try {
         {
             $eqLogicId = init('eqLogic');
             $template = init('template');
-            $text1 = init('text1');
-            $text2 = init('text2');
-            $text3 = init('text3');
-            $text4 = init('text4');
-            $text5 = init('text5');
+            $text1 = init('text_1');
+            $text2 = init('text_2');
+            $text3 = init('text_3');
+            $text4 = init('text_4');
+            $text5 = init('text_5');
             $qrCode = init('qrCode');
 
             /** @var eqLogic|null $eqLogic */
@@ -53,14 +53,14 @@ try {
                 return;
             }
 
-            $payload = [
-                'text1' => $text1,
-                'text2' => $text2,
-                'text3' => $text3,
-                'text4' => $text4,
-                'text5' => $text5,
-                'qrCode' => $qrCode,
-                'template' => $template,
+            $data = [
+                'text_1' => $text1,
+                'text_2' => $text2,
+                'text_3' => $text3,
+                'text_4' => $text4,
+                'text_5' => $text5,
+                'qrcode' => $qrCode,
+                'template' => 1,
             ];
 
             $broker = $eqLogic->getBroker();
@@ -90,7 +90,6 @@ try {
             /** @var cmd[]|null $commands */
             $commands = $eqLogic->getCmd();
             $topic = null;
-
             foreach ($commands as $command) {
                 $commandTopic = $command->getConfiguration('topic');
                 $lastTopicElement = preg_replace('/.*\//', '', $commandTopic);
@@ -98,16 +97,21 @@ try {
                     continue;
                 }
 
+                if ('push' === $lastTopicElement) {
+                    $topic = $commandTopic;
+                    break;
+                }
+
                 // we already have a "down" topic, we're going to use the same topic
                 if ('down' === $lastTopicElement) {
-                    $topic = $commandTopic;
+                    $topic = $commandTopic.'/push';
                     break;
                 }
 
                 // we have an "up" topic, we simply need to replace "up" by "down"
                 if ('up' === $lastTopicElement) {
                     // replace up by down in topic
-                    $topic = preg_replace('/\/up$/', '/down', $commandTopic);
+                    $topic = preg_replace('/\/up$/', '/down/push', $commandTopic);
                     break;
                 }
             }
@@ -118,7 +122,25 @@ try {
                 return;
             }
 
-            $eqLogic->publish('Update display screen', $topic, $payload, 0, 0);
+            $payload = [
+                'end_device_ids' => [
+                    'device_id' => $eqLogic->getName(),
+                    'application_ids' => [
+                        'application_id' => 'display-milesight',
+                        // for Jerome custom, need to find a way to grab application_id somewhere
+//                        'application_id' => 'app-test-nico',
+                    ],
+                ],
+                'downlinks' => [
+                    [
+                        'f_port' => 85,
+                        'decoded_payload' => $data,
+                        'priority' => 'NORMAL',
+                    ],
+                ],
+            ];
+
+            $eqLogic->publish('Update display screen', $topic, $payload, 1, 0);
 
             ajax::success();
 

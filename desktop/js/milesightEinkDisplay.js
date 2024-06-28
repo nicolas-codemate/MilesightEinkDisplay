@@ -54,8 +54,9 @@ $('#submitDisplayUpdate').off('click').on('click', function () {
         async: false,
         success: function (data) {
             const returnData = JSON.parse(data);
-            if (returnData.state !== 'ok') {
-                $.fn.showAlert({message: data.result, level: 'error'});
+            if (returnData
+                .state !== 'ok') {
+                $.fn.showAlert({message: returnData.result, level: 'error'});
                 return;
             }
             $.fn.showAlert({message: 'Modifications envoyées', level: 'success'});

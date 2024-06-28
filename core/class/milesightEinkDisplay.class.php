@@ -20,6 +20,8 @@ require_once __DIR__.'/../../../../core/php/core.inc.php';
 
 class milesightEinkDisplay extends eqLogic
 {
+    public const MILESIGHT_EINK_DISPLAY = 'milesightEinkDisplay';
+
     /*     * *************************Attributs****************************** */
 
     /*
