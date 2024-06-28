@@ -18,7 +18,7 @@
 /* * ***************************Includes********************************* */
 require_once __DIR__.'/../../../../core/php/core.inc.php';
 
-class MilesightEinkDIsplay extends eqLogic
+class milesightEinkDisplay extends eqLogic
 {
     /*     * *************************Attributs****************************** */
 
@@ -168,7 +168,7 @@ class MilesightEinkDIsplay extends eqLogic
     /*     * **********************Getteur Setteur*************************** */
 }
 
-class MilesightEinkDIsplayCmd extends cmd
+class milesightEinkDisplayCmd extends cmd
 {
     /*     * *************************Attributs****************************** */
 

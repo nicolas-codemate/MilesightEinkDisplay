@@ -1,4 +1,4 @@
-# Changelog plugin MilesightEinkDIsplay
+# Changelog plugin milesightEinkDisplay
 
 >**IMPORTANT**
 >

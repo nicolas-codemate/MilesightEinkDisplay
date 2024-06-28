@@ -18,13 +18,13 @@
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
 // Fonction exécutée automatiquement après l'installation du plugin
-function MilesightEinkDIsplay_install() {
+function milesightEinkDisplay_install() {
 }
 
 // Fonction exécutée automatiquement après la mise à jour du plugin
-function MilesightEinkDIsplay_update() {
+function milesightEinkDisplay_update() {
 }
 
 // Fonction exécutée automatiquement après la suppression du plugin
-function MilesightEinkDIsplay_remove() {
+function milesightEinkDisplay_remove() {
 }

@@ -1,6 +1,6 @@
 {
-	"id": "MilesightEinkDIsplay",
-	"name": "Milessight Eink Display",
+	"id": "milesightEinkDisplay",
+	"name": "Milesight Eink Display",
 	"pluginVersion": "0.1",
 	"description": {
 		"fr_FR": "Plugin pour intéragir avec les écrans Milesight Eink"
@@ -13,8 +13,8 @@
 	"hasOwnDeamon": false,
 	"maxDependancyInstallTime": 0,
 	"changelog_beta": "",
-	"changelog": "https://github.com/nicolas-codemate/jeedom-MilesightEinkDisplay/blob/main/docs/fr_FR/changelog.md",
-	"documentation": "https://github.com/nicolas-codemate/jeedom-MilesightEinkDisplay/blob/main/README.md",
+	"changelog": "https://github.com/nicolas-codemate/jeedom-milesightEinkDisplay/blob/main/docs/fr_FR/changelog.md",
+	"documentation": "https://github.com/nicolas-codemate/jeedom-milesightEinkDisplay/blob/main/README.md",
 	"language": [
 		"fr_FR"
 	],
