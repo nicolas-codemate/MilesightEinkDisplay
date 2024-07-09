@@ -139,7 +139,7 @@ try {
                     [
                         'f_port' => 85,
                         'decoded_payload' => $data,
-                        'priority' => 'NORMAL',
+                        'priority' => 'HIGHEST',
                     ],
                 ],
             ];
