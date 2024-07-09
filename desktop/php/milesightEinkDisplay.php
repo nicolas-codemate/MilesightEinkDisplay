@@ -86,21 +86,21 @@ $jMQTTEqpts = eqLogic::byType('jMQTT');
             <div class="form-group">
                 <legend class="col-form-label col-sm-2 pt-0">{{Template}}</legend>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="template" id="template1">
+                    <input class="form-check-input" type="radio" name="template" id="template1" value="1" checked>
                     <label class="form-check-label" for="template1">
                         Template 1
                     </label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="template" id="template2">
-                        <label class="form-check-label" for="template2">
-                            Template 2
-                        </label>
-                    </div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="template" id="template2" value="2">
+                    <label class="form-check-label" for="template2">
+                        Template 2
+                    </label>
                 </div>
             </div>
             <div class="form-group">
                 <?php
-                for ($i = 1; $i <= 5; $i++) {
+                for ($i = 1; $i <= 10; $i++) {
                     echo "<label for=\"text_$i\" class=\"control-label\">{{Text $i}}</label>";
                     echo "<input type=\"text\" class=\"form-control\" id=\"text_$i\" name=\"text_$i\">";
                 }

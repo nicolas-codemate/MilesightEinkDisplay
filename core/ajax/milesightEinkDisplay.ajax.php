@@ -32,12 +32,11 @@ try {
         {
             $eqLogicId = init('eqLogic');
             $template = init('template');
-            $text1 = init('text_1');
-            $text2 = init('text_2');
-            $text3 = init('text_3');
-            $text4 = init('text_4');
-            $text5 = init('text_5');
-            $qrCode = init('qrCode');
+
+            // create dynamic variable from $text1 to $text10
+            for ($i = 1; $i <= 10; $i++) {
+                ${'text'.$i} = init('text_'.$i);
+            }
 
             /** @var eqLogic|null $eqLogic */
             $eqLogic = eqLogic::byId($eqLogicId);
@@ -54,14 +53,19 @@ try {
             }
 
             $data = [
-                'text_1' => $text1,
-                'text_2' => $text2,
-                'text_3' => $text3,
-                'text_4' => $text4,
-                'text_5' => $text5,
-                'qrcode' => $qrCode,
-                'template' => 1,
+                'template' => (int)$template,
             ];
+
+            if(!empty($qrCode)) {
+                $data['qrcode'] = $qrCode;
+            }
+
+            foreach (range(1, 5) as $i) {
+                if (empty(${'text'.$i})) {
+                    continue;
+                }
+                $data['text_'.$i] = ${'text'.$i};
+            }
 
             $broker = $eqLogic->getBroker();
             if (!$broker) {
