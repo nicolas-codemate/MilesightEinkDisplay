@@ -56,7 +56,7 @@ try {
                 'template' => (int)$template,
             ];
 
-            if(!empty($qrCode)) {
+            if (!empty($qrCode)) {
                 $data['qrcode'] = $qrCode;
             }
 
@@ -145,6 +145,31 @@ try {
             ];
 
             $eqLogic->publish('Update display screen', $topic, $payload, 1, 0);
+
+            sleep(2);
+
+            // bytes to refresh screen
+            $bytes = [0xFF, 0x3D, 0x02];
+
+            $payload = [
+                'end_device_ids' => [
+                    'device_id' => $eqLogic->getName(),
+                    'application_ids' => [
+                        'application_id' => 'display-milesight',
+                        // for Jerome custom, need to find a way to grab application_id somewhere
+//                        'application_id' => 'app-test-nico',
+                    ],
+                ],
+                'downlinks' => [
+                    [
+                        'f_port' => 85,
+                        'frm_payload' => base64_encode(pack('C*', ...$bytes)),
+                        'priority' => 'HIGHEST',
+                    ],
+                ],
+            ];
+
+            $eqLogic->publish('Refresh display screen', $topic, $payload, 1, 0);
 
             ajax::success();
 
