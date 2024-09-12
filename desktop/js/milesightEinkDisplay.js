@@ -16,34 +16,40 @@
 
 const ajaxUrl = 'plugins/milesightEinkDisplay/core/ajax/milesightEinkDisplay.ajax.php';
 
-// callPluginAjax = function (_params) {
-//     $.ajax({
-//         async: _params.async == undefined ? true : _params.async,
-//         global: false,
-//         type: "POST",
-//         url: "plugins/milesightEinkDisplay/core/ajax/milesightEinkDisplay.ajax.php",
-//         data: _params.data,
-//         dataType: 'json',
-//         error: function (request, status, error) {
-//             handleAjaxError(request, status, error);
-//         },
-//         success: function (data) {
-//             if (data.state != 'ok') {
-//                 $.fn.showAlert({message: data.result, level: 'danger'});
-//             } else {
-//                 if (typeof _params.success === 'function') {
-//                     _params.success(data.result);
-//                 }
-//             }
-//         }
-//     });
-// };
+const tooggleScreenForm = function () {
+    const $selectedEquipments = $('#selectedEquipments');
+    const $acceptButton = $('.bootbox-accept');
+    if ($selectedEquipments.value().length > 0) {
+        $('#screenForm').show();
+        $acceptButton.removeAttr('disabled');
+        $acceptButton.removeClass('disabled');
+    } else {
+        $('#screenForm').hide();
+        $acceptButton.attr('disabled', 'disabled');
+        $acceptButton.addClass('disabled');
+    }
+};
+
+const resetEquipementSelect = function () {
+    const $selectedEquipments = $('#selectedEquipments');
+    $selectedEquipments.empty();
+    tooggleScreenForm();
+    rebuildEquipementSelect();
+};
+
+const rebuildEquipementSelect = function () {
+    const $selectedEquipments = $('#selectedEquipments');
+    $selectedEquipments.multiselect('rebuild');
+    $selectedEquipments.multiselect('selectAll', false);
+    $selectedEquipments.multiselect('refresh');
+}
 
 const searchEquipment = function () {
     const brokerId = $('#jmqttBrkSelector').val();
     const parentObjectSelectorId = $('#parentObjectSelector').val();
 
     if (brokerId === '' || parentObjectSelectorId === '') {
+        resetEquipementSelect();
         return;
     }
 
@@ -55,36 +61,24 @@ const searchEquipment = function () {
         success: function (data) {
             const returnData = JSON.parse(data);
             if (returnData.state !== 'ok') {
+                resetEquipementSelect();
                 $.fn.showAlert({message: returnData.result, level: 'error'});
                 return;
             }
             const eqpts = returnData.result;
-            const $equipmentsSelect = $('#equipmentsSelect');
-            $equipmentsSelect.empty();
+            resetEquipementSelect();
+
             $.each(eqpts, function (key, obj) {
-                $equipmentsSelect.append($('<option>', {
-                    value: obj.id,
-                    text: obj.name,
-                }));
+                const $selectedEquipments = $('#selectedEquipments');
+                $selectedEquipments.append(`<option value="${obj.id}">${obj.name}</option>`);
             });
-            $equipmentsSelect.multiselect('rebuild');
-            $equipmentsSelect.multiselect('selectAll', false);
-            $equipmentsSelect.multiselect('refresh');
+            rebuildEquipementSelect();
             tooggleScreenForm();
         },
         cache: false,
         processData: false,
     });
-}
-
-const tooggleScreenForm = function (screenInfo) {
-    const $equipmentsSelect = $('#equipmentsSelect');
-    if ($equipmentsSelect.value()) {
-        $('#screenForm').show();
-    } else {
-        $('#screenForm').hide();
-    }
-}
+};
 
 $('.eqLogicAction[data-action=updateScreen]').off('click').on('click', function () {
     let dialog_message = '';
@@ -114,19 +108,11 @@ $('.eqLogicAction[data-action=updateScreen]').off('click').on('click', function 
 
     dialog_message += '</div>';
 
-
-    // dialog_message += '<label class="control-label">{{Equipement}}</label>';
-    // dialog_message += '<select class="bootbox-input bootbox-input-select form-control" name="eqLogic">';
-    // $.each(jMQTTEqpts, function (key, name) {
-    //     dialog_message += '<option value="' + key + '">' + name + '</option>';
-    // });
-    // dialog_message += '</select><br/>';
-
     dialog_message += `
     <div class="row">
         <div class="col-md-12">
             <label class="control-label">{{Equipements}}</label>
-            <select id="equipmentsSelect" multiple="multiple"></select>
+            <select id="selectedEquipments" multiple="multiple" name="selectedEquipments[]"></select>
         </div>
     </div>
     <br/>
@@ -200,7 +186,7 @@ $('.eqLogicAction[data-action=updateScreen]').off('click').on('click', function 
             });
 
             tooggleScreenForm();
-            $('#equipmentsSelect').multiselect({
+            $('#selectedEquipments').multiselect({
                 includeSelectAllOption: true,
             });
         },
@@ -212,10 +198,10 @@ $('.eqLogicAction[data-action=updateScreen]').off('click').on('click', function 
             const $acceptButton = $('.bootbox-accept');
             const $cancelButton = $('.bootbox-cancel');
             [$acceptButton, $cancelButton].forEach(button => {
-                button.attr('disabled', true);
+                button.attr('disabled', 'disabled');
                 button.addClass('disabled');
             });
-            $acceptButton.html('{{Envoi en cours...}}');
+            $acceptButton.html('Envoi en cours...');
 
             const formData = new FormData(document.forms['ajaxForm']);
             formData.append('action', 'updateDisplay');

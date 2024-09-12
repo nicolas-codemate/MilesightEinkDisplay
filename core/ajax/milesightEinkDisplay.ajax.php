@@ -15,6 +15,105 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 
+function sendMessageToUpdateScreen(eqLogic $eqLogic, array $data): void
+{
+    $payload = [
+        'end_device_ids' => [
+            'device_id' => $eqLogic->getName(),
+            'application_ids' => [
+                'application_id' => 'display-milesight',
+                // for Jerome custom, need to find a way to grab application_id somewhere
+//                        'application_id' => 'app-test-nico',
+            ],
+        ],
+        'downlinks' => [
+            [
+                'f_port' => 85,
+                'decoded_payload' => $data,
+                'priority' => 'HIGHEST',
+            ],
+        ],
+    ];
+
+    $topic = findTopicForEqLogic($eqLogic);
+    if (null === $topic) {
+        milesightEinkDisplay::logger('info', sprintf('Aucun topic trouvé pour l\'équipement %d', $eqLogic->getId()));
+
+        return;
+    }
+
+    $eqLogic->publish('Update display screen', $topic, $payload, 1, 0);
+}
+
+function sendMessageToRefreshScreen(eqLogic $eqLogic): void
+{
+    // bytes to refresh screen
+    $bytes = [0xFF, 0x3D, 0x02];
+
+    $payload = [
+        'end_device_ids' => [
+            'device_id' => $eqLogic->getName(),
+            'application_ids' => [
+                'application_id' => 'display-milesight',
+                // for Jerome custom, need to find a way to grab application_id somewhere
+//                        'application_id' => 'app-test-nico',
+            ],
+        ],
+        'downlinks' => [
+            [
+                'f_port' => 85,
+                'frm_payload' => base64_encode(pack('C*', ...$bytes)),
+                'priority' => 'HIGHEST',
+            ],
+        ],
+    ];
+
+    $topic = findTopicForEqLogic($eqLogic);
+    if (null === $topic) {
+        milesightEinkDisplay::logger('info', sprintf('Aucun topic trouvé pour l\'équipement %d', $eqLogic->getId()));
+
+        return;
+    }
+
+
+    $eqLogic->publish('Refresh display screen', $topic, $payload, 1, 0);
+}
+
+function findTopicForEqLogic(eqLogic $eqLogic): ?string
+{
+    /** @var cmd[]|null $commands */
+    $commands = $eqLogic->getCmd();
+    $topic = null;
+    foreach ($commands as $command) {
+        $commandTopic = $command->getConfiguration('topic');
+        $lastTopicElement = preg_replace('/.*\//', '', $commandTopic);
+        if (null === $lastTopicElement) {
+            continue;
+        }
+
+        if ('push' === $lastTopicElement) {
+            $topic = $commandTopic;
+            break;
+        }
+
+        // we already have a "down" topic, we're going to use the same topic
+        if ('down' === $lastTopicElement) {
+            $topic = $commandTopic.'/push';
+            break;
+        }
+
+        // we have an "up" topic, we simply need to replace "up" by "down"
+        if ('up' === $lastTopicElement) {
+            // replace up by down in topic
+            $topic = preg_replace('/\/up$/', '/down/push', $commandTopic);
+            break;
+        }
+    }
+
+    return $topic;
+}
+
+
 try {
     require_once dirname(__FILE__).'/../../../../core/php/core.inc.php';
     include_file('core', 'authentification', 'php');
@@ -30,7 +129,7 @@ try {
     switch ($action) {
         case "updateDisplay":
         {
-            $eqLogicId = init('eqLogic');
+            $selectedEquipments = init('selectedEquipments');
             $template = init('template');
 
             // create dynamic variable from $text1 to $text10
@@ -38,140 +137,82 @@ try {
                 ${'text'.$i} = init('text_'.$i);
             }
 
-            /** @var eqLogic|null $eqLogic */
-            $eqLogic = eqLogic::byId($eqLogicId);
-            if (is_null($eqLogic)) {
-                ajax::error(__('Equipement introuvable', __FILE__));
+            $hasError = false;
+            foreach ($selectedEquipments as $eqLogicId) {
+                /** @var eqLogic|null $eqLogic */
+                $eqLogic = eqLogic::byId($eqLogicId);
+                if (is_null($eqLogic)) {
+                    $hasError = true;
+                    milesightEinkDisplay::logger('warning', sprintf('Equipement introuvable ID: %s', $eqLogicId));
 
-                return;
-            }
-
-            if (false === $eqLogic instanceof jMQTT) {
-                ajax::error(__('Equipement non compatible', __FILE__));
-
-                return;
-            }
-
-            $data = [
-                'template' => (int)$template,
-            ];
-
-            if (!empty($qrCode)) {
-                $data['qrcode'] = $qrCode;
-            }
-
-            foreach (range(1, 5) as $i) {
-                if (empty(${'text'.$i})) {
                     continue;
                 }
-                $data['text_'.$i] = ${'text'.$i};
-            }
 
-            $broker = $eqLogic->getBroker();
-            if (!$broker) {
-                ajax::error(__('Aucun broker selectionné', __FILE__));
-
-                return;
-            }
-
-            if (!$broker->getIsEnable()) {
-                ajax::error(__('Le broker sélectionné n\'est pas activé', __FILE__));
-
-                return;
-            }
-
-            if (!$eqLogic->getMqttClientState()) {
-                if (!$eqLogic::getDaemonAutoMode()) {
-                    ajax::error(__('Le démon jMQTT n`est pas activé', __FILE__));
+                if (false === $eqLogic instanceof jMQTT) {
+                    $hasError = true;
+                    milesightEinkDisplay::logger('warnng', 'Equipement non compatible');
 
                     return;
                 }
-                ajax::error(__('Message non publié, car le démon jMQTT n\'est pas démarré', __FILE__));
 
-                return;
+                $data = [
+                    'template' => (int)$template,
+                ];
+
+                if (!empty($qrCode)) {
+                    $data['qrcode'] = $qrCode;
+                }
+
+                foreach (range(1, 5) as $i) {
+                    if (empty(${'text'.$i})) {
+                        ${'text'.$i} = '';
+                    }
+                    $data['text_'.$i] = ${'text'.$i};
+                }
+
+                $broker = $eqLogic->getBroker();
+                if (!$broker) {
+                    $hasError = true;
+                    milesightEinkDisplay::logger(
+                        'warning',
+                        sprintf('Aucun broker selectionné pour l\'ID %d', $eqLogicId)
+                    );
+
+                    return;
+                }
+
+                if (!$broker->getIsEnable()) {
+                    $hasError = true;
+                    milesightEinkDisplay::logger('warning', 'Le broker sélectionné n\'est pas activé');
+
+                    return;
+                }
+
+                if (!$eqLogic->getMqttClientState()) {
+                    if (!$eqLogic::getDaemonAutoMode()) {
+                        $hasError = true;
+                        milesightEinkDisplay::logger('warning', 'Le démon jMQTT n`est pas activé');
+
+                        return;
+                    }
+                    $hasError = true;
+                    milesightEinkDisplay::logger(
+                        'warning',
+                        'Message non publié, car le démon jMQTT n\'est pas démarré'
+                    );
+
+                    return;
+                }
+                sendMessageToUpdateScreen($eqLogic, $data);
+                usleep(1);
+                sendMessageToRefreshScreen($eqLogic);
             }
 
-            /** @var cmd[]|null $commands */
-            $commands = $eqLogic->getCmd();
-            $topic = null;
-            foreach ($commands as $command) {
-                $commandTopic = $command->getConfiguration('topic');
-                $lastTopicElement = preg_replace('/.*\//', '', $commandTopic);
-                if (null === $lastTopicElement) {
-                    continue;
-                }
-
-                if ('push' === $lastTopicElement) {
-                    $topic = $commandTopic;
-                    break;
-                }
-
-                // we already have a "down" topic, we're going to use the same topic
-                if ('down' === $lastTopicElement) {
-                    $topic = $commandTopic.'/push';
-                    break;
-                }
-
-                // we have an "up" topic, we simply need to replace "up" by "down"
-                if ('up' === $lastTopicElement) {
-                    // replace up by down in topic
-                    $topic = preg_replace('/\/up$/', '/down/push', $commandTopic);
-                    break;
-                }
+            if (!$hasError) {
+                ajax::success();
+            } else {
+                ajax::error();
             }
-
-            if (null === $topic) {
-                ajax::error(__('Aucun topic trouvé', __FILE__));
-
-                return;
-            }
-
-            $payload = [
-                'end_device_ids' => [
-                    'device_id' => $eqLogic->getName(),
-                    'application_ids' => [
-                        'application_id' => 'display-milesight',
-                        // for Jerome custom, need to find a way to grab application_id somewhere
-//                        'application_id' => 'app-test-nico',
-                    ],
-                ],
-                'downlinks' => [
-                    [
-                        'f_port' => 85,
-                        'decoded_payload' => $data,
-                        'priority' => 'HIGHEST',
-                    ],
-                ],
-            ];
-
-            $eqLogic->publish('Update display screen', $topic, $payload, 1, 0);
-
-            sleep(2);
-
-            // bytes to refresh screen
-            $bytes = [0xFF, 0x3D, 0x02];
-
-            $payload = [
-                'end_device_ids' => [
-                    'device_id' => $eqLogic->getName(),
-                    'application_ids' => [
-                        'application_id' => 'display-milesight',
-                        // for Jerome custom, need to find a way to grab application_id somewhere
-//                        'application_id' => 'app-test-nico',
-                    ],
-                ],
-                'downlinks' => [
-                    [
-                        'f_port' => 85,
-                        'frm_payload' => base64_encode(pack('C*', ...$bytes)),
-                        'priority' => 'HIGHEST',
-                    ],
-                ],
-            ];
-
-            $eqLogic->publish('Refresh display screen', $topic, $payload, 1, 0);
-
-            ajax::success();
 
             return;
         }
