@@ -14,8 +14,6 @@
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
 
-const ajaxUrl = 'plugins/milesightEinkDisplay/core/ajax/milesightEinkDisplay.ajax.php';
-
 const tooggleScreenForm = function () {
     const $selectedEquipments = $('#selectedEquipments');
     const $acceptButton = $('.bootbox-accept');
@@ -54,7 +52,7 @@ const searchEquipment = function () {
     }
 
     $.ajax({
-        url: ajaxUrl,
+        url: 'plugins/milesightEinkDisplay/core/ajax/milesightEinkDisplay.ajax.php',
         type: 'POST',
         data: `action=getEquipments&brokerId=${brokerId}&parentObjectId=${parentObjectSelectorId}`,
         async: false,
@@ -206,7 +204,7 @@ $('.eqLogicAction[data-action=updateScreen]').off('click').on('click', function 
             const formData = new FormData(document.forms['ajaxForm']);
             formData.append('action', 'updateDisplay');
             $.ajax({
-                url: ajaxUrl,
+                url: 'plugins/milesightEinkDisplay/core/ajax/milesightEinkDisplay.ajax.php',
                 type: 'POST',
                 data: formData,
                 async: false,

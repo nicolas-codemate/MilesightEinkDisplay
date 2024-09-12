@@ -1,9 +1,5 @@
 <?php
 
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-
 if (!isConnect('admin')) {
     throw new Exception('{{401 - Accès non autorisé}}');
 }
@@ -23,7 +19,6 @@ foreach (eqLogic::byType('jMQTT') as $eqLogic) {
 }
 sendVarToJS('jMQTTEqpts', $jMQTTEqpts);
 
-
 $objects = [];
 foreach (jeeObject::buildTree() as $object) {
     $objects[$object->getId()] = [
@@ -32,23 +27,7 @@ foreach (jeeObject::buildTree() as $object) {
     ];
 }
 
-
 sendVarToJS('objects', $objects);
-
-//        <div class="form-group">
-//            <label class="col-sm-3 control-label">{{Objet parent}}</label>
-//            <div class="col-sm-3">
-//                <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
-//                    <option value="">{{Aucun}}</option>
-//                    <?php
-//                    foreach ((jeeObject::buildTree(null, false)) as $object) {
-//                        echo '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
-//                    }
-//                    ?>
-<!--                </select>-->
-<!--            </div>-->
-<!--        </div>-->
-
 
 ?>
 
