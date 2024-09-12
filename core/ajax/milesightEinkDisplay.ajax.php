@@ -175,6 +175,45 @@ try {
 
             return;
         }
+        case "getEquipments":
+        {
+            $brokerId = init('brokerId');
+            $jMQTTs = jMQTT::byBrkId($brokerId);
+            if (empty($jMQTTs)) {
+                ajax::success([]);
+
+                return;
+            }
+
+            $parentObjectId = init('parentObjectId');
+
+            /** @var jeeObject $parentObject */
+            $parentObject = jeeObject::byId($parentObjectId);
+            if (null === $parentObject) {
+                ajax::success([]);
+            }
+
+            // collect all child objects ids
+            $objectIds = array_map(static function (jeeObject $object) {
+                return $object->getId();
+            }, $parentObject->getChilds());
+            // add parent object id
+            $objectIds[] = $parentObject->getId();
+
+            $toReturn = [];
+            foreach ($jMQTTs as $jMQTT) {
+                if (\in_array($jMQTT->getObject_id(), $objectIds)) {
+                    $toReturn[] = [
+                        'id' => $jMQTT->getId(),
+                        'name' => $jMQTT->getName(),
+                    ];
+                }
+            }
+
+            ajax::success($toReturn);
+
+            return;
+        }
         default:
             throw new RuntimeException(__('Aucune méthode correspondante à', __FILE__).' : '.$action);
     }
