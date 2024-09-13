@@ -20,11 +20,9 @@ function sendMessageToUpdateScreen(eqLogic $eqLogic, array $data): void
     $payload = [
         'end_device_ids' => [
             'device_id' => $eqLogic->getName(),
-            'application_ids' => [
-                'application_id' => 'display-milesight',
-                // for Jerome custom, need to find a way to grab application_id somewhere
-//                        'application_id' => 'app-test-nico',
-            ],
+//            'application_ids' => [
+//                'application_id' => 'display-milesight',
+//            ],
         ],
         'downlinks' => [
             [
@@ -53,11 +51,9 @@ function sendMessageToRefreshScreen(eqLogic $eqLogic): void
     $payload = [
         'end_device_ids' => [
             'device_id' => $eqLogic->getName(),
-            'application_ids' => [
-                'application_id' => 'display-milesight',
-                // for Jerome custom, need to find a way to grab application_id somewhere
-//                        'application_id' => 'app-test-nico',
-            ],
+//            'application_ids' => [
+//                'application_id' => 'display-milesight',
+//            ],
         ],
         'downlinks' => [
             [
@@ -163,7 +159,7 @@ try {
                     $data['qrcode'] = $qrCode;
                 }
 
-                foreach (range(1, 5) as $i) {
+                foreach (range(1, 10) as $i) {
                     if (empty(${'text'.$i})) {
                         ${'text'.$i} = '';
                     }

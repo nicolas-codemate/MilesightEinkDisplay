@@ -4,20 +4,15 @@ if (!isConnect('admin')) {
     throw new Exception('{{401 - Accès non autorisé}}');
 }
 
+$plugin = plugin::byId('milesightEinkDisplay');
+sendVarToJS('eqType', $plugin->getId());
+
 $eqBrokers = jMQTT::getBrokers();
 $eqBrokersName = [];
 foreach ($eqBrokers as $brokerId => $broker) {
     $eqBrokersName[$brokerId] = $broker->getName();
 }
 sendVarToJS('eqBrokers', $eqBrokersName);
-
-
-/** @var eqLogic[] $jMQTTEqpts */
-$jMQTTEqpts = [];
-foreach (eqLogic::byType('jMQTT') as $eqLogic) {
-    $jMQTTEqpts[$eqLogic->getId()] = $eqLogic->getName();
-}
-sendVarToJS('jMQTTEqpts', $jMQTTEqpts);
 
 $objects = [];
 foreach (jeeObject::buildTree() as $object) {

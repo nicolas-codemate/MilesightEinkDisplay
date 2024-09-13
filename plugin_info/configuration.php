@@ -22,7 +22,5 @@ if (!isConnect()) {
   die();
 }
 
-$milesightEinkDisplayBroker = config::byKey()
-
 ?>
 
